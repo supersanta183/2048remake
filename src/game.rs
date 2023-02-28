@@ -44,9 +44,15 @@ impl Game{
         let (x1, x2, y1, y2) = generate_starting_position();
         let mut board = Array2D::filled_with(0, 4, 4);
         board.set(x1 as usize, y1 as usize, 2)
-            .expect("An error has occured while initializing board");
+            .unwrap_or_else(|error|{ // Error handling
+                println!("An error has occured while initializing board, attempting to rerun : {:?}", error);
+                Game::new();
+            });
         board.set(x2 as usize, y2 as usize, 2)
-            .expect("An error has occured while initializing board");
+            .unwrap_or_else(|error|{ // Error handling
+                println!("An error has occured while initializing board, attempting to rerun : {:?}", error);
+                Game::new();
+            });
 
         board // return
     }

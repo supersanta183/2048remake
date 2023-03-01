@@ -4,22 +4,31 @@ use rand::Rng;
 
 
 pub struct Game{
-    board: Array2D<i64>,
-    points: i64,
+    pub board: Array2D<i64>,
+    pub points: i64,
+}
+
+pub trait NormalGame{
+    fn new() -> Self;
+    fn initialize_board() -> Array2D<i64>;
+
 }
 
 impl Game{
+    //returns board
+    pub fn get_board(&mut self) -> &mut Array2D<i64>{
+        &mut self.board
+    }
+
+}
+
+impl NormalGame for Game{
     //Makes a new game with an empty board and 
-    pub fn new() -> Game{
+    fn new() -> Game{
         return Game{
             board: Game::initialize_board(), 
             points: 0,
         };
-    }
-
-    //returns board
-    pub fn get_board(&mut self) -> &mut Array2D<i64>{
-        &mut self.board
     }
 
     // initializes board with 2 in two random spots
@@ -37,17 +46,10 @@ impl Game{
         }
 
         let mut board = Array2D::filled_with(0, 4, 4);
-        board.set(x1 as usize, y1 as usize, 2)
-            .unwrap_or_else(|error|{ // Error handling
-                println!("An error has occured while initializing board, attempting to rerun : {:?}", error);
-                Game::new();
-            });
-        board.set(x2 as usize, y2 as usize, 2)
-            .unwrap_or_else(|error|{ // Error handling
-                println!("An error has occured while initializing board, attempting to rerun : {:?}", error);
-                Game::new();
-            });
-
+        board.set(x1, y1, 2)
+            .unwrap();
+        board.set(x2, y2, 2)
+            .unwrap();
         board // return
     }
 }

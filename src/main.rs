@@ -1,6 +1,5 @@
 //lets variables be declared but not used
 #![allow(unused)]
-mod board;
 mod game;
 
 use std::io;

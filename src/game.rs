@@ -16,8 +16,8 @@ pub trait NormalGame{
 
 impl Game{
     //returns board
-    pub fn get_board(&mut self) -> &mut Array2D<i64>{
-        &mut self.board
+    pub fn get_board(self) ->  Array2D<i64>{
+        self.board
     }
 
 }

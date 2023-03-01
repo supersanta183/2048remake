@@ -9,7 +9,7 @@ pub struct Game{
 }
 
 impl Game{
-    //Makes a new game with an empty board and 
+    //Makes a new game with an empty board and initializes it
     pub fn new() -> Game{
         return Game{
             board: Game::initialize_board(), 
@@ -34,7 +34,7 @@ impl Game{
                 rng.gen_range(0..4),
                 rng.gen_range(0..4)
             );
-        }
+        } // generating random positions
 
         let mut board = Array2D::filled_with(0, 4, 4);
         board.set(x1 as usize, y1 as usize, 2)

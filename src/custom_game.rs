@@ -18,7 +18,7 @@ impl CustomGame for Game{
     fn initialize_board() -> Array2D<i64> {
         Array2D::filled_with(0, 4, 4)
     }
-    fn add_at_position(&mut self: Game, element: i64, x: usize, y: usize){
+    fn add_at_position(&mut self, element: i64, x: usize, y: usize){
         self.board.set(x, y, element).unwrap();
     }
 

@@ -15,24 +15,22 @@ pub trait NormalGame{
 }
 
 impl Game{
-    //returns board
-    pub fn get_board(self) ->  Array2D<i64>{
-        self.board
+    pub fn get_board(&self) ->  &Array2D<i64>{
+        &self.board
     }
-
 }
 
 impl NormalGame for Game{
     //Makes a new game with an empty board and 
     fn new() -> Game{
-        return Game{
+        Game{
             board: Game::initialize_board(), 
             points: 0,
-        };
+        }
     }
 
     // initializes board with 2 in two random spots
-    fn initialize_board() -> Array2D<i64>{
+    fn initialize_board() -> Array2D<i64> {
         let mut rng = rand::thread_rng();
         let (mut x1, mut x2, mut y1, mut y2) = (0, 0, 0, 0);
         //While loop makes sure the two initial values don't start in the same spot
@@ -50,7 +48,7 @@ impl NormalGame for Game{
             .unwrap();
         board.set(x2, y2, 2)
             .unwrap();
-        board // return
+        board
     }
 }
 

@@ -1,11 +1,8 @@
-//lets variables be declared but not used
-#![allow(unused)]
-mod game;
+
 
 use std::io;
-
-use game::Game;
-use crate::game::NormalGame;
+use remake2048::game;
+use crate::game::Game;
 
 fn main() {
     let mut game = game::NormalGame::new();

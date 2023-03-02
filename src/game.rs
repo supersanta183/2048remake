@@ -38,6 +38,14 @@ impl Game{
                                     break 'inner;
                                 }
                                 board.set(i, n, element).unwrap(); // set value on (row: i, column: n) to element
+                                //HER
+                                let second_element = Game::check_left(board, i, n-1);
+                                if second_element == -1{
+                                    break;
+                                }
+                                if second_element == element{
+                                    board.set(i, n, element+second_element).unwrap();
+                                }
                                 n -= 1;
                             },
                             a => {
@@ -78,6 +86,17 @@ impl Game{
                 }
             },
         }
+    }
+
+    pub fn print_board(&self){
+        let board = self.get_board();
+        for row_iter in board.rows_iter(){
+            for element in row_iter{
+                print!("{} ", element);
+            }
+            println!();
+        }
+        println!();
     }
 
 }

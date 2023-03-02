@@ -15,7 +15,7 @@ fn main() {
     let mut game_obj: Game = CustomGame::new();
     game_obj.add_at_position(4, 3, 0);
     game_obj.add_at_position(4, 3, 3);
-    //game_obj.add_at_position(2, 0, 3);
+    game_obj.add_at_position(4, 3, 2);
     //game_obj.add_at_position(4, 0, 3);
     //game_obj.add_at_position(4, 1, 1);
     game_obj.swipe_right();

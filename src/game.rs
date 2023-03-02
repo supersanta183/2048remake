@@ -1,14 +1,9 @@
 
-
 use array2d::Array2D;
 use rand::Rng;
 
-enum Direction {
-    LEFT,
-    RIGHT,
-    UP,
-    DOWN
-}
+
+use crate::direction::Direction;
 
 pub struct Game{
     pub board: Array2D<i64>,
@@ -30,78 +25,86 @@ impl Game{
         &mut self.board
     }
 
-    pub fn swipe(&mut self) {
-        println!("swipe");
+    pub fn swipe(&mut self, dir: &Direction) {
         let board = self.get_mut_board();
         for i in 0..4 {
-            let mut n = 3;
+            let n = Direction::get_n(dir);
 
             // gets next Number to the left, returns None if no more numbers
-            while let Some(value) = Game::get_value_from(board, i, n - 1) {
-
-                // no more columns to check
-                println!("n : {}", n);
-                if n == 0{
-                    break;
-                }
-                println!("n : {}", n);
-
-                // match value from current position on the board
-                match board[(i,n)]{
-                    //current position is 0, set to value
-                    0 => {
-                        board[(i,n)] = value;
-                        
-                        //checks if there is an equal value as the next number.
-                        // Otherwise places next number directly in the next position
-                        if let Some(a) = Game::get_value_from(board, i, n-1){
-                            println!("foerst");
-                            Game::set_board_value(board, i, n, a, value);
-                            n -= 1;
-                        }
-                        else {
-                            break;
-                        }
-                    },
-                    // current position is not 0, update if equal to value
-                    //Otherwise update next position.
-                    a => {
-                        Game::set_board_value(board, i, n, value, a);
-                        println!("anden");
-                        n-=1;
-                    },
-                }
-            }
+            Direction::swipe_direction(board, i, n, dir);
         }
     }
 
-    fn set_board_value(board: &mut Array2D<i64>, i: usize, n: usize, a: i64, value: i64){
+    pub fn swipe_content(board: &mut Array2D<i64>, i:usize, n:usize,dir: &Direction) -> Option<usize>{
+        let x = Game::get_value_from(board, i, n, dir);
+        // no more columns to check
+        if x.is_none(){
+            return None;
+        }
+        let value = x.unwrap();
+        println!("value {}", value);
+
+        // match value from current position on the board
+        match board.get(i,n).unwrap(){
+            //current position is 0, set to value
+            0 => {
+                board[(i,n)] = value;
+                //checks if there is an equal value as the next number.
+                // Otherwise places next number directly in the next position
+                let p = Direction::increment_direction(dir, n);
+                if let Some(a) = Game::get_value_from(board, i, p, dir){
+                    println!("value {}", a);
+                    Game::set_board_value(board, i, n, a, value, dir);
+                    Some(Direction::increment_direction(dir, n))
+                }
+                else {
+                    None
+                }
+            },
+            // current position is not 0, update if equal to value
+            //Otherwise update next position.
+            a => {
+                Game::set_board_value(board, i, n, value, *a, dir);
+                Some(Direction::increment_direction(dir, n))
+            },
+        }
+    }
+
+    fn set_board_value(board: &mut Array2D<i64>, i: usize, n: usize, a: i64, value: i64, dir: &Direction){
         if a == value{
+            println!("putting {} in {i},{}",a+value,n);
             board[(i,n)] = a + value;
         }
         else {
-            board[(i,n-1)] = a;
+            println!("putting {a} in {i},{}",Direction::increment_direction(dir, n));
+            board[(i,Direction::increment_direction(dir, n))] = a;
         }
     }
 
 
-    fn get_value_from(board: &mut Array2D<i64>, x: usize, y: usize) -> Option<i64>{
+    fn get_value_from(board: &mut Array2D<i64>, x: usize, y: usize, dir: &Direction) -> Option<i64>{
         // y is horizontal, x is vertical
-        println!("get value");
-
+        println!("x {}, y: {}",x, y);
         match board[(x,y)] {
             0 => {
-                if y == 0{
-                    return None;
+                println!("hej");
+                if let Some(l) = Direction::get_value_comparison(board, x, y, dir){
+                    Some(l)
                 }
-                    Game::get_value_from(board, x, y-1)
+                else {
+                    None
+                }
             },
             a => {
-                println!("x : {}, y : {}, val: {} ", x, y, board[(x,y)]);
                 board[(x,y)] = 0;
                 Some(a)
             },
         }
+    }
+
+    pub fn get_value_recursive(board: &mut Array2D<i64>, x: usize, y: usize, dir: &Direction) -> Option<i64>{
+        let i = Direction::increment_direction(dir, y);
+        Game::get_value_from(board, x, i, dir)
     }
 
     pub fn print_board(board: &Array2D<i64>){
@@ -146,9 +149,5 @@ impl NormalGame for Game{
             .unwrap();
         board
     }
-}
-
-trait Swipable{
-    fn test() -> Self;
 }
 

@@ -1,9 +1,9 @@
 
-/*
 #[cfg(test)]
 mod test_game{
     use remake2048;
-    use remake2048::game::{NormalGame, Game, Direction};
+    use remake2048::direction::Direction;
+    use remake2048::game::{NormalGame, Game};
     use remake2048::custom_game::CustomGame;
 
     struct Setup{
@@ -121,4 +121,4 @@ fn swipes_correctly_when_2_4_2_4(){
 }
 }
 
-*/
+

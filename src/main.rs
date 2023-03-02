@@ -16,12 +16,12 @@ fn main() {
     game_obj.add_at_position(2, 0, 0);
     game_obj.add_at_position(4, 0, 1);
     game_obj.add_at_position(2, 0, 2);
-    game_obj.add_at_position(0, 0, 3);
-    //game_obj.add_at_position(4, 1, 1);
-    game_obj.print_board();
-    game_obj.swipe_right();
+    game_obj.add_at_position(4, 0, 3);
     let board = game_obj.get_board();
-    game_obj.print_board();
+    Game::print_board(board);
+    game_obj.swipe();
+    let board = game_obj.get_board();
+    Game::print_board(board);
     
 }
 

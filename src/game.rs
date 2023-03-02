@@ -28,61 +28,58 @@ impl Game{
         let board = self.get_mut_board();
         for i in 0..4 {
             let mut n = 3;
-            'inner: while n >= 0 {
-                match n { // matches on column index (horizontal)
-                    0 => (),
-                    _ => match *board.get(i, n).unwrap() { // matches on value on (row: i, column: n)
-                            0 => {
-                                let element = Game::check_left(board, i, n-1);
-                                if element == -1{ // -1 means loop reached the end
-                                    break 'inner;
-                                }
-                                board.set(i, n, element).unwrap(); // set value on (row: i, column: n) to element
-                                //HER
-                                let second_element = Game::check_left(board, i, n-1);
-                                if second_element == -1{
-                                    break;
-                                }
-                                if second_element == element{
-                                    board.set(i, n, element+second_element).unwrap();
-                                }
-                                n -= 1;
-                            },
-                            a => {
-                                let element = Game::check_left(board, i, n-1);
-                                if element == -1{
-                                    break 'inner; // -1 means loop reached the end
-                                }
-                                if element == a{
-                                    board.set(i, n, element+a).unwrap();
-                                    n -= 1;
-                                }
-                                else{
-                                    board.set(i, n-1, element).unwrap();
-                                    n -= 1;
-                                }
-                            },
+            while let Some(value) = Game::check_left(board, i, n - 1) {
+                if n == 0{
+                    break;
+                }
+                match board.get(i, n){
+                    Some(0) => {
+                        board[(i,n)] = value;
+                        
+                        //second element
+                        if let Some(a) = Game::check_left(board, i, n-1){
+                            if a == value{
+                                board[(i,n)] = a + value;
+                            }
+                            else {
+                                board[(i,n-1)] = a;
+                            }
+                            n -= 1;
                         }
+                        else {
+                            break;
+                        }
+                    },
+                    Some(a) => {
+                        if *a == value{
+                            board[(i,n)] = a + value;
+                        }
+                        else{
+                            board[(i,n-1)] = value;
+                        }
+                        n-=1;
+                    },
+                    None => (),
                 }
             }
         }
     }
 
-    fn check_left(board: &mut Array2D<i64>, x: usize, y: usize) -> i64{
+    fn check_left(board: &mut Array2D<i64>, x: usize, y: usize) -> Option<i64>{
         // y is horizontal, x is vertical
         match y{
             0 => match *board.get(x, y).unwrap(){
-                0 => -1, // return -1 because it has reached the end
+                0 => None, // return -1 because it has reached the end
                 a => {
                     board.set(x, y, 0).unwrap();
-                    a
+                    Some(a)
                 },
             },
             _ => match *board.get(x, y).unwrap() {
                 0 => Game::check_left(board, x, y-1),
                 b => {
                     board.set(x, y, 0).unwrap();
-                    b
+                    Some(b)
                 }
             },
         }

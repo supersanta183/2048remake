@@ -28,8 +28,8 @@ fn when_inserted_on_0_3_it_is_2(){
     let mut setup = Setup::new();
     setup.custom_game.add_at_position(2, 0, 3);
     let board = setup.custom_game.get_board();
-    let x = board.get(0, 3).unwrap();
-    assert_eq!(*x,2);
+    let x = board[(0,3)];
+    assert_eq!(x,2);
 }
 
 #[test]
@@ -39,9 +39,9 @@ fn swipe_moves_2_to_the_right_most_column(){
     setup.custom_game.add_at_position(2, 0, 3);
     setup.custom_game.swipe_right();
     let board = setup.custom_game.get_board();
-    let x = board.get(0, 3).unwrap();
+    let x = board[(0,3)];
 
-    assert_eq!(*x, 2);
+    assert_eq!(x, 2);
 }
 
 #[test]
@@ -52,9 +52,9 @@ fn when_swiping_add_2_equal_numbers_from_position_1_and_2() {
     setup.custom_game.add_at_position(2, 0, 1);
     setup.custom_game.swipe_right();
     let board = setup.custom_game.get_board();
-    let x = board.get(0, 3).unwrap();
+    let x = board[(0,3)];
 
-    assert_eq!(*x, 4);
+    assert_eq!(x, 4);
 }
 
 #[test]
@@ -65,9 +65,25 @@ fn when_swiping_adds_2_equal_numbers(){
     setup.custom_game.add_at_position(2, 0, 1);
     setup.custom_game.swipe_right();
     let board = setup.custom_game.get_board();
-    let x = board.get(0, 3).unwrap();
+    let x = board[(0,3)];
 
-    assert_eq!(*x, 4);
+    assert_eq!(x, 4);
+}
+
+#[test]
+fn something(){
+    let mut setup = Setup::new();
+
+    setup.custom_game.add_at_position(2, 0, 0);
+    setup.custom_game.add_at_position(4, 0, 1);
+    setup.custom_game.add_at_position(2, 0, 2);
+    setup.custom_game.add_at_position(0, 0, 3);
+    setup.custom_game.swipe_right();
+    let board = setup.custom_game.get_board();
+    let x = board[(0,3)];
+    let y = board[(0,2)];
+    assert_eq!(x, 2);
+    assert_eq!(y,4);
 }
 
 

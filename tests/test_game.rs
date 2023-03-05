@@ -62,6 +62,33 @@ fn when_swiping_add_2_equal_numbers_from_position_1_and_2() {
 }
 
 #[test]
+// 2 0 4 0 is inserted, should be 0 0 2 4 after swipe
+fn insert_2_0_4_0_should_not_merge(){
+    let mut setup = Setup::new();
+
+    setup.custom_game.add_at_position(4, 0, 2);
+    setup.custom_game.add_at_position(2, 0, 0);
+    setup.custom_game.swipe(&DirectionController::new(RightDirectionStrategy));
+    let board = setup.custom_game.get_board();
+
+    assert_eq!(board[(0,3)], 4);
+    assert_eq!(board[(0,2)], 2);
+}
+
+#[test]
+// 2 0 2 0 is inserted, should be 0 0 0 4 after swiping right
+fn insert_2_0_2_0_should_merge(){
+    let mut setup = Setup::new();
+
+    setup.custom_game.add_at_position(2, 0, 2);
+    setup.custom_game.add_at_position(2, 0, 0);
+    setup.custom_game.swipe(&DirectionController::new(RightDirectionStrategy));
+    let board = setup.custom_game.get_board();
+
+    assert_eq!(board[(0,3)], 4);
+}
+
+#[test]
 // 0 2 2 0 is inserted, should be 0 0 0 4 after swipe right
 fn when_swiping_adds_2_equal_numbers(){
     let mut setup = Setup::new();
@@ -187,7 +214,7 @@ fn swipes_correctly_when_2_4_2_left(){
 //TESTS FOR SWIPING UP
 #[test]
 // 2 2 0 0 is inserted, should be 0 0 0 4 after swipe right
-fn when_swiping_add_2_equal_numbers_from_position_1_and_2_UP() {
+fn when_swiping_add_2_equal_numbers_from_position_1_and_2_up() {
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 1, 0);
@@ -201,7 +228,7 @@ fn when_swiping_add_2_equal_numbers_from_position_1_and_2_UP() {
 
 #[test]
 // 2 4 2 0 is inserted, shoudl be 0 2 4 2 after swipe right
-fn swipes_correctly_when_2_4_2_UP(){
+fn swipes_correctly_when_2_4_2_up(){
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 3, 0);
@@ -217,7 +244,7 @@ fn swipes_correctly_when_2_4_2_UP(){
 
 #[test]
 // 2 2 2 2 is inserted, should be 0 0 4 4 after swipe right
-fn swipes_correctly_when_2_2_2_2_UP(){
+fn swipes_correctly_when_2_2_2_2_up(){
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 0, 0);
@@ -231,7 +258,7 @@ fn swipes_correctly_when_2_2_2_2_UP(){
 }
 
 #[test]
-fn swipes_correctly_when_2_4_2_4_UP(){
+fn swipes_correctly_when_2_4_2_4_up(){
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 0, 0);
@@ -246,10 +273,23 @@ fn swipes_correctly_when_2_4_2_4_UP(){
     assert_eq!(board[(0,0)], 2);
 }
 
+#[test]
+// 2 0 2 0 is inserted vertically, should be 0 0 0 4 after swiping right
+fn insert_2_0_2_0_should_merge_up(){
+    let mut setup = Setup::new();
+
+    setup.custom_game.add_at_position(2, 0, 0);
+    setup.custom_game.add_at_position(2, 2, 0);
+    setup.custom_game.swipe(&DirectionController::new(UpDirectionStrategy));
+    let board = setup.custom_game.get_board();
+
+    assert_eq!(board[(0,0)], 4);
+}
+
 //TESTS FOR SWIPING DOWN
 #[test]
 // 2 2 0 0 is inserted, should be 0 0 0 4 after swipe right
-fn when_swiping_add_2_equal_numbers_from_position_1_and_2_DOWN() {
+fn when_swiping_add_2_equal_numbers_from_position_1_and_2_down() {
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 1, 0);
@@ -263,7 +303,7 @@ fn when_swiping_add_2_equal_numbers_from_position_1_and_2_DOWN() {
 
 #[test]
 // 2 4 2 0 is inserted, shoudl be 0 2 4 2 after swipe right
-fn swipes_correctly_when_2_4_2_DOWN(){
+fn swipes_correctly_when_2_4_2_down(){
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 3, 0);
@@ -279,7 +319,7 @@ fn swipes_correctly_when_2_4_2_DOWN(){
 
 #[test]
 // 2 2 2 2 is inserted, should be 0 0 4 4 after swipe right
-fn swipes_correctly_when_2_2_2_2_DOWN(){
+fn swipes_correctly_when_2_2_2_2_down(){
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 0, 0);
@@ -293,7 +333,7 @@ fn swipes_correctly_when_2_2_2_2_DOWN(){
 }
 
 #[test]
-fn swipes_correctly_when_2_4_2_4_DOWN(){
+fn swipes_correctly_when_2_4_2_4_down(){
     let mut setup = Setup::new();
 
     setup.custom_game.add_at_position(2, 0, 0);

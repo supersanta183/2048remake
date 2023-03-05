@@ -4,7 +4,7 @@ use crate::{game::Game};
 
 const LEFT_N: usize = 0;
 const UP_N: usize = 0;
-const DOWN_N: usize = 0;
+const DOWN_N: usize = 3;
 const RIGHT_N: usize = 3;
 
 
@@ -23,7 +23,8 @@ pub trait Direction{
     fn get_next_value(&self, game: &mut Game) -> Option<i64>;
     fn evaluate_inner_loop(&self, game: &Game) -> bool;
     fn evaluate_row_loop(&self, game: &Game) -> bool;
-    fn increment_value(&self, game: &Game) -> (usize,usize);
+    fn increment_value(&self, (x,y): (usize, usize)) -> (usize,usize){(x,y)}
+    fn setup_loop_values(&self, game: &mut Game, outer_loop: usize);
 }
 
 pub struct DirectionController<T: Direction>{
@@ -63,8 +64,12 @@ impl<T: Direction> DirectionController<T>{
         self.direction_strategy.evaluate_row_loop(game)
     }
 
-    pub fn increment_value(&self, game: &Game) -> (usize, usize) {
-        self.direction_strategy.increment_value(game)
+    pub fn increment_value(&self, (x,y) : (usize, usize)) -> (usize, usize) {
+        self.direction_strategy.increment_value((x,y))
+    }
+
+    pub fn setup_loop_values(&self, game: &mut Game, outer_loop: usize){
+        self.direction_strategy.setup_loop_values(game, outer_loop);
     }
 }
 
@@ -113,8 +118,13 @@ impl Direction for RightDirectionStrategy {
         vec
     }
 
-    fn increment_value(&self, game: &Game) -> (usize,usize) {
-        (*game.get_outer_loop_counter(), *game.get_inner_loop_counter()-1)
+    fn increment_value(&self, (x,y): (usize, usize)) -> (usize,usize) {
+        (x, y-1)
+    }
+
+    fn setup_loop_values(&self, game: &mut Game, outer_loop: usize) {
+        game.set_inner_loop_counter(self.create_inner_loop_range());
+        game.set_outer_loop_counter(outer_loop);
     }
 }
 
@@ -158,14 +168,18 @@ impl Direction for LeftDirectionStrategy{
         let count = *game.get_inner_loop_counter();
         let mut vec = Vec::with_capacity(count);
         for i in count..4{
-            println!("i : {}", i);
             vec.push(i);
         }
         vec
     }
 
-    fn increment_value(&self, game: &Game) -> (usize, usize) {
-        (*game.get_outer_loop_counter(), *game.get_inner_loop_counter()+1)
+    fn increment_value(&self, (x,y): (usize, usize)) -> (usize, usize) {
+        (x, y+1)
+    }
+
+    fn setup_loop_values(&self, game: &mut Game, outer_loop: usize) {
+        game.set_inner_loop_counter(self.create_inner_loop_range());
+        game.set_outer_loop_counter(outer_loop);
     }
 }
 
@@ -188,7 +202,6 @@ impl Direction for UpDirectionStrategy{
         let count = *game.get_inner_loop_counter();
         let mut vec = Vec::with_capacity(count);
         for i in count..4{
-            println!("i : {}", i);
             vec.push(i);
         }
         vec
@@ -212,11 +225,16 @@ impl Direction for UpDirectionStrategy{
     }
 
     fn evaluate_row_loop(&self, game: &Game) -> bool {
-        *game.get_inner_loop_counter() == 3
+        *game.get_inner_loop_counter() == 4
     }
 
-    fn increment_value(&self, game: &Game) -> (usize,usize) {
-        (*game.get_outer_loop_counter()+1, *game.get_inner_loop_counter())
+    fn increment_value(&self, (x,y): (usize, usize)) -> (usize,usize) {
+        (x+1, y)
+    }
+
+    fn setup_loop_values(&self, game: &mut Game, outer_loop: usize) {
+        game.set_inner_loop_counter(outer_loop);
+        game.set_outer_loop_counter(self.create_inner_loop_range());
     }
 }
 
@@ -265,7 +283,12 @@ impl  Direction for DownDirectionStrategy {
         vec
     }
 
-    fn increment_value(&self, game: &Game) -> (usize,usize) {
-        (*game.get_outer_loop_counter() - 1, *game.get_inner_loop_counter())
+    fn increment_value(&self, (x,y): (usize, usize)) -> (usize,usize) {
+        (x - 1, y)
+    }
+
+    fn setup_loop_values(&self, game: &mut Game, outer_loop: usize) {
+        game.set_inner_loop_counter(outer_loop);
+        game.set_outer_loop_counter(self.create_inner_loop_range());
     }
 }

@@ -1,9 +1,7 @@
 use array2d::Array2D;
-use rand::Rng;
-use std::{thread,time};
-use crate::direction;
+use rand::{Rng, seq::SliceRandom};
 
-use crate::direction::{Direction, DirectionValues, DirectionController};
+use crate::direction::{Direction, DirectionController};
 
 pub struct Game {
     pub board: Array2D<i64>,
@@ -11,6 +9,7 @@ pub struct Game {
     pub outer_loop_counter: usize,
     pub cur_value: i64,
     pub points: i64,
+    pub has_lost: bool,
 }
 
 pub trait NormalGame {
@@ -26,8 +25,16 @@ pub trait CustomGame {
 
 impl Game {
 
-    pub fn get_board(&self) -> &Array2D<i64>{
+    pub fn get_loser_status(&self) -> bool{
+        self.has_lost
+    }
+
+    pub fn get_board(&self) -> &Array2D<i64> {
         &self.board
+    }
+
+    pub fn get_points(&self) -> &i64 {
+        &self.points
     }
 
     pub fn get_mutable_board(&mut self) -> &mut Array2D<i64> {
@@ -52,17 +59,19 @@ impl Game {
 
     pub fn swipe<T: Direction>(&mut self, dir: &DirectionController<T>) {
         for outer_loop in dir.get_outer_loop_range(){
-            self.inner_loop_counter = dir.get_inner_loop_range();
-            self.outer_loop_counter = outer_loop;
+            dir.setup_loop_values(self, outer_loop);
             self.execute_swipe(dir);
         }
+        self.generate_new_number();
     }
 
     fn execute_swipe<T: Direction>(&mut self, dir: &DirectionController<T>){
         while dir.evaluate_inner_loop(self){
+            if dir.evaluate_row_loop(self){
+                break;
+            }
             let cur_value = self.board.get(self.outer_loop_counter, self.inner_loop_counter);
             let cur_pos = (self.outer_loop_counter, self.inner_loop_counter);
-            println!("Execute swipe cur pos : x : {}, y : {}", self.outer_loop_counter, self.inner_loop_counter);
             match cur_value {
                 Some(value) => {
                     self.cur_value = *value;
@@ -80,15 +89,11 @@ impl Game {
 
     fn current_value_is_0<T:Direction>(&mut self, (cur_pos_outer, cur_pos_inner): (usize, usize), dir: &DirectionController<T>){
         loop{
-            println!(" 0 outer : {}, inner: {}",self.outer_loop_counter, self.inner_loop_counter);
             if dir.evaluate_row_loop(self){
                 break;
             }
-
-            println!("curx : {}, cury : {}", cur_pos_outer, cur_pos_inner);
             let temp = dir.get_next_value(self);
             let next_value;
-
             match temp {
                 Some(a) => next_value = a,
                 None => break,
@@ -96,15 +101,12 @@ impl Game {
 
             //next value is not 0, pop that value and check if there is an equal value after that.
             if next_value != 0{
-                println!("hej");
+                self.cur_value = next_value;
                 dir.update_loop_counter(self);
-                self.board[(cur_pos_outer,cur_pos_inner)] = self.pop_from_position((self.outer_loop_counter,self.inner_loop_counter));
-                Game::print_board(&self.board);
-                
-                println!("hej 2");
-
+                let value = self.pop_from_position((self.outer_loop_counter,self.inner_loop_counter));
+                self.push_at_position((cur_pos_outer,cur_pos_inner), value);
                 // number moved, check if next number is equal. Merge if they are.
-                self.merge_next_number(next_value, cur_pos_outer, cur_pos_inner, dir);
+                self.merge_next_number(cur_pos_outer, cur_pos_inner, dir);
                 break;
             }
             else {
@@ -114,67 +116,111 @@ impl Game {
                 break;
             }
         }
-
     }
 
     fn current_value_is_not_0<T: Direction>(&mut self, (cur_pos_outer, cur_pos_inner): (usize, usize), dir: &DirectionController<T>){
         loop{
+            if dir.evaluate_row_loop(self){
+                break;
+            }
             let temp = dir.get_next_value(self);
             let next_value;
-
             match temp {
                 Some(a) => next_value = a,
                 None => break,
             }
-            println!(" not 0 outer : {}, inner: {}",self.outer_loop_counter, self.inner_loop_counter);
-            if dir.evaluate_row_loop(self){
-                break;
-            }
-            println!("next : {}, cur value : {}", next_value, self.cur_value);
-            if next_value != 0 && next_value == self.cur_value{
+            
+            // next value is 0 update loop counter
+            if next_value == 0{
                 dir.update_loop_counter(self);
-                self.board[(cur_pos_outer,cur_pos_inner)] = self.pop_from_position((self.outer_loop_counter,self.inner_loop_counter)) + self.cur_value;
+            }
+            // next value is equal to the current value, merge them
+            else if next_value == self.cur_value{
+                dir.update_loop_counter(self);
+                let value = self.pop_from_position((*self.get_outer_loop_counter(),*self.get_inner_loop_counter())) + self.cur_value;
+                self.push_at_position((cur_pos_outer,cur_pos_inner), value);
+                self.update_points(value);
                 break;
             }
+            // next value is different from current value, put it in the next position
             else {
                 dir.update_loop_counter(self);
+                let value = self.pop_from_position((*self.get_outer_loop_counter(), *self.get_inner_loop_counter()));
+                let (x,y) = dir.increment_value((cur_pos_outer, cur_pos_inner));
+                self.push_at_position((x,y), value);
                 break;
             }
         }
-        Game::print_board(&self.board);
     }
 
-    fn merge_next_number<T: Direction>(&mut self, next_value: i64, cur_pos_outer: usize, cur_pos_inner: usize, dir: &DirectionController<T>){
-        println!("merge Current position: x : {}, y : {}", cur_pos_outer, cur_pos_inner);
+    fn merge_next_number<T: Direction>(&mut self, cur_pos_outer: usize, cur_pos_inner: usize, dir: &DirectionController<T>){
         for _x in dir.get_merge_loop_range(self) {
-            println!("{}", self.get_inner_loop_counter());
-            let temp_value = dir.get_next_value(self);
-            
-            println!("out : {}, in: {}", cur_pos_outer, cur_pos_inner);
-
-            match temp_value {
-                Some(0) => break,
-                Some(temp) => {
-                    if temp == next_value{
-                        println!("her");
-                        self.board[(cur_pos_outer,cur_pos_inner)] = self.pop_from_position(dir.increment_value(self)) + temp;
-                        Game::print_board(&self.board);
-                        break;
-                    }
-                    else {
-                        break;
-                    }
-                },
+            let temp = dir.get_next_value(self);
+            let next_value;
+            match temp {
+                Some(a) => next_value = a,
                 None => break,
             }
+
+            //next value is 0, update loop counter
+            if next_value == 0{
+                dir.update_loop_counter(self);
+            }
+            // next value is equal, merge
+            else if next_value == self.cur_value {
+                let value = self.pop_from_position(dir.increment_value((*self.get_outer_loop_counter(), *self.get_inner_loop_counter()))) + next_value;
+                self.push_at_position((cur_pos_outer,cur_pos_inner), value);
+                self.update_points(value);
+                break;
+            }
+            //next value is different from current value, put it in next position
+            else {
+                dir.update_loop_counter(self);
+                let value = self.pop_from_position((*self.get_outer_loop_counter(), *self.get_inner_loop_counter()));
+                let (x,y) = dir.increment_value((cur_pos_outer, cur_pos_inner));
+                self.push_at_position((x,y), value);
+                break;
+            }
         }
+    }
+
+    fn push_at_position(&mut self, (xpos,ypos): (usize, usize), value: i64){
+        self.get_mutable_board()[(xpos,ypos)] = value;
     }
 
     fn pop_from_position(&mut self, (x,y): (usize,usize)) -> i64{
-        println!("pop position: x : {}, y : {}",x, y);
         let temp_value = self.board[(x,y)];
         self.board[(x,y)] = 0;
         temp_value
+    }
+
+    fn update_points(&mut self, amount: i64){
+        self.points = self.points + amount;
+    }
+
+    fn generate_new_number(&mut self){
+        let mut rng = rand::thread_rng();
+        let vec = vec![2,4];
+        let num = vec.choose(&mut rng);
+
+        let mut free_positions: Vec<(usize,usize)> = Vec::new();
+
+        for i in 0..4{
+            for n in 0..4{
+                if self.board[(i,n)] == 0{
+                    free_positions.push((i,n));
+                }
+            }
+        }
+
+        if free_positions.is_empty(){
+            self.has_lost = true;
+            println!("you lost!")
+        }
+        else {
+            let pos = free_positions.choose(&mut rng);
+            self.push_at_position(*pos.unwrap(), *num.unwrap());
+        }
     }
 
     pub fn print_board(board: &Array2D<i64>){
@@ -197,6 +243,7 @@ impl NormalGame for Game {
             outer_loop_counter: 0,
             cur_value: 0,
             points: 0,
+            has_lost: false,
         }
     }
 
@@ -232,6 +279,7 @@ impl CustomGame for Game{
             outer_loop_counter: 0,
             cur_value: 0,
             points: 0,
+            has_lost: false,
         }
     }
     fn initialize_board() -> Array2D<i64> {

@@ -3,9 +3,9 @@ use crate::{game::Game};
 
 
 const LEFT_N: usize = 0;
+const UP_N: usize = 0;
 const DOWN_N: usize = 0;
 const RIGHT_N: usize = 3;
-const UP_N: usize = 3;
 
 
 pub enum DirectionValues {
@@ -173,34 +173,99 @@ pub struct UpDirectionStrategy;
 
 impl Direction for UpDirectionStrategy{
     fn create_outer_loop_range(&self) -> Vec<usize> {
-        todo!()
+        let mut vec = Vec::with_capacity(4);
+        for i in 0..4{
+            vec.push(i);
+        }
+        vec
     }
 
     fn create_inner_loop_range(&self) -> usize {
-        todo!()
+        UP_N
     }
 
     fn create_merge_loop_range(&self, game: &Game) -> Vec<usize> {
-        todo!()
+        let count = *game.get_inner_loop_counter();
+        let mut vec = Vec::with_capacity(count);
+        for i in count..4{
+            println!("i : {}", i);
+            vec.push(i);
+        }
+        vec
     }
 
     fn update_loop_counter(&self, game: &mut Game) {
-        todo!()
+        let cur_count = game.get_outer_loop_counter();
+        game.set_outer_loop_counter(cur_count+1);
     }
 
     fn get_next_value(&self, game: &mut Game) -> Option<i64> {
-        todo!()
+        let (x,y) = (*game.get_outer_loop_counter(),*game.get_inner_loop_counter());
+        match game.get_mutable_board().get(x+1, y) {
+            Some(a) => Some(*a),
+            None => None
+        }
     }
 
     fn evaluate_inner_loop(&self, game: &Game) -> bool {
-        todo!()
+        *game.get_outer_loop_counter() < 3
     }
 
     fn evaluate_row_loop(&self, game: &Game) -> bool {
-        todo!()
+        *game.get_inner_loop_counter() == 3
     }
 
     fn increment_value(&self, game: &Game) -> (usize,usize) {
-        todo!()
+        (*game.get_outer_loop_counter()+1, *game.get_inner_loop_counter())
+    }
+}
+
+pub struct DownDirectionStrategy;
+
+impl  Direction for DownDirectionStrategy {
+    fn create_outer_loop_range(&self) -> Vec<usize>{
+        let mut vec = Vec::with_capacity(4);
+        for i in (0..4).rev(){
+            vec.push(i);
+        }
+        vec
+    }
+
+    fn create_inner_loop_range(&self) -> usize {
+        DOWN_N
+    }
+
+    fn update_loop_counter(&self, game: &mut Game) {
+        let cur_count = game.get_outer_loop_counter();
+        game.set_outer_loop_counter(cur_count-1);
+    }
+
+    fn get_next_value(&self, game: &mut Game) -> Option<i64> {
+        let (x,y) = (*game.get_outer_loop_counter(),*game.get_inner_loop_counter());
+        match game.get_mutable_board().get(x-1, y) {
+            Some(a) => Some(*a),
+            None => None
+        }
+    }
+
+    fn evaluate_inner_loop(&self, game: &Game) -> bool {
+        *game.get_outer_loop_counter() > 0
+    }
+
+    fn evaluate_row_loop(&self, game: &Game) -> bool {
+        *game.get_outer_loop_counter() == 0
+    }
+
+    fn create_merge_loop_range(&self, game: &Game) -> Vec<usize> {
+        let count = *game.get_outer_loop_counter();
+        let mut vec = Vec::with_capacity(count);
+        for i in (0..count).rev(){
+            vec.push(i);
+        }
+        vec
+    }
+
+    fn increment_value(&self, game: &Game) -> (usize,usize) {
+        (*game.get_outer_loop_counter() - 1, *game.get_inner_loop_counter())
     }
 }

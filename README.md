@@ -1,2 +1,4 @@
 "# 2048remake" 
-2048 game implemented in Rust as a beginner project in order to learn the programming language
+
+This is my first project in rust.
+At the moment it is a very early version running in the commandprompt while I am developing a gui.

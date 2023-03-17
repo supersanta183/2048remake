@@ -1,3 +1,5 @@
+use std::iter::Enumerate;
+
 use array2d::Array2D;
 use rand::{Rng, seq::SliceRandom};
 
@@ -58,6 +60,10 @@ impl Game {
     }
 
     pub fn swipe<T: Direction>(&mut self, dir: &DirectionController<T>) {
+        match self.check_valid_moves() {
+            true => (),
+            false => self.has_lost = true,
+        }
         for outer_loop in dir.get_outer_loop_range(){
             dir.setup_loop_values(self, outer_loop);
             self.execute_swipe(dir);
@@ -202,7 +208,6 @@ impl Game {
         let mut rng = rand::thread_rng();
         let vec = vec![2,4];
         let num = vec.choose(&mut rng);
-
         let mut free_positions: Vec<(usize,usize)> = Vec::new();
 
         for i in 0..4{
@@ -212,15 +217,28 @@ impl Game {
                 }
             }
         }
-
-        if free_positions.is_empty(){
-            self.has_lost = true;
-            println!("you lost!")
-        }
-        else {
+        if !free_positions.is_empty(){
             let pos = free_positions.choose(&mut rng);
             self.push_at_position(*pos.unwrap(), *num.unwrap());
         }
+    }
+
+    fn check_valid_moves(&self) -> bool {
+        let board = self.get_board();
+        for i in 0..4 {
+            for j in 0..4 {
+                let val = board[(i,j)];
+                match val {
+                    0 => return true,
+                    _ if j > 0 && val == board[(i,j-1)] => return true,
+                    _ if i > 0 && val ==  board[(i-1,j)] => return true,
+                    _ if j < 3 && val ==  board[(i,j+1)] => return true,
+                    _ if i < 3 && val ==  board[(i+1,j)] => return true,
+                    _ => (),
+                };
+            }
+        }
+        false
     }
 
     pub fn print_board(board: &Array2D<i64>){

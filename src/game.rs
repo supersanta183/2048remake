@@ -124,7 +124,7 @@ impl Game {
                 break;
             }
             let temp = dir.get_next_value(self);
-            let next_value;
+            let mut next_value;
             match temp {
                 Some(a) => next_value = a,
                 None => break,
@@ -156,7 +156,7 @@ impl Game {
     fn merge_next_number<T: Direction>(&mut self, cur_pos_outer: usize, cur_pos_inner: usize, dir: &DirectionController<T>){
         for _x in dir.get_merge_loop_range(self) {
             let temp = dir.get_next_value(self);
-            let next_value;
+            let mut next_value;
             match temp {
                 Some(a) => next_value = a,
                 None => break,

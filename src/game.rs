@@ -57,10 +57,11 @@ impl Game {
         self.outer_loop_counter = a;
     }
 
-    pub fn swipe<T: Direction>(&mut self, dir: &DirectionController<T>) {
+    pub fn swipe<T: Direction>(&mut self, direction: T) {
+        let dir = DirectionController::new(direction);
         for outer_loop in dir.get_outer_loop_range(){
             dir.setup_loop_values(self, outer_loop);
-            self.execute_swipe(dir);
+            self.execute_swipe(&dir);
         }
         self.generate_new_number();
     }

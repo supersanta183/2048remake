@@ -5,9 +5,6 @@ use array2d::Array2D;
 use remake2048::direction::{DirectionValues, DirectionController, RightDirectionStrategy, LeftDirectionStrategy, UpDirectionStrategy, DownDirectionStrategy};
 use remake2048::game::{Game, CustomGame, NormalGame};
 
-
-
-
 fn main() {
     let mut game_obj: Game = NormalGame::new();
     
